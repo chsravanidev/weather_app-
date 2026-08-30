@@ -1,32 +1,29 @@
-const apiKey = "fd2d3a8a6a8e4b1e8e8e9a0c8c8c8c8c"; // demo key
+const apiKey = "fd2d3a8a6a8e4b1e8e8e9a0c8c8c8c8c";
 
 async function getWeather(){
   const city = document.getElementById("cityInput").value || "Vijayawada";
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
 
   try{
     const res = await fetch(url);
     const data = await res.json();
 
-    if(data.cod!== 200){
-      // QA Testing - Demo data for Vijayawada
-      document.getElementById("cityName").innerText = city;
-      document.getElementById("temp").innerText = "31°C";
-      document.getElementById("desc").innerText = "Partly Cloudy (Demo)";
-      document.getElementById("humidity").innerText = "84%";
-      document.getElementById("wind").innerText = "7.8 km/h";
-      return;
+    if(data.cod == 200){
+      document.getElementById("cityName").innerText = data.name;
+      document.getElementById("temp").innerText = Math.round(data.main.temp) + "°C";
+      document.getElementById("desc").innerText = data.weather[0].description;
+      document.getElementById("humidity").innerText = data.main.humidity + "% Humidity";
+      document.getElementById("wind").innerText = data.wind.speed + " km/h Wind";
+    } else {
+      alert("City not found ma Sravani! Check spelling");
     }
-
-    document.getElementById("cityName").innerText = data.name;
-    document.getElementById("temp").innerText = Math.round(data.main.temp)+"°C";
-    document.getElementById("desc").innerText = data.weather[0].description;
-    document.getElementById("humidity").innerText = data.main.humidity+"%";
-    document.getElementById("wind").innerText = data.wind.speed+" km/h";
   }catch(e){
-    alert("API Error - Showing demo data ma Sravani");
+    alert("API Error ma - Check API Key!");
   }
 }
 
-// Auto load Vijayawada
+// Button click
+document.querySelector("button").addEventListener("click", getWeather);
+
+// Auto load
 getWeather();

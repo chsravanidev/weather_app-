@@ -1,33 +1,51 @@
 async function getWeather() {
-  const city = document.getElementById("cityInput").value;
-  if(!city) return;
+  const cityInput = document.getElementById("cityInput");
+  const city = cityInput ? cityInput.value.trim() : "";
+  if (!city) { alert("City type chey ma Sravani!"); return; }
 
   try {
-    // Step 1: City name to Latitude, Longitude
+    // Step 1: City -> Lat/Lon
     const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
     const geoData = await geoRes.json();
-    if (!geoData.results) throw new Error();
+    if (!geoData.results || geoData.results.length === 0) throw new Error("City not found");
 
     const lat = geoData.results[0].latitude;
     const lon = geoData.results[0].longitude;
     const cityName = geoData.results[0].name;
 
-    // Step 2: Get Weather
+    // Step 2: Lat/Lon -> Weather
     const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code`);
     const weatherData = await weatherRes.json();
     const current = weatherData.current;
 
-    document.getElementById("temp").innerText = current.temperature_2m + "°C";
-    document.getElementById("cityName").innerText = cityName;
-    document.getElementById("condition").innerText = "Weather Code: " + current.weather_code + " - Clear";
-    document.getElementById("humidity").innerText = "💧 " + current.relative_humidity_2m + "% Humidity";
-    document.getElementById("wind").innerText = "💨 " + current.wind_speed_10m + " km/h Wind";
+    // Step 3: Show on page
+    const tempEl = document.getElementById("temp") || document.querySelector("h1");
+    if(document.getElementById("temp")) document.getElementById("temp").innerText = Math.round(current.temperature_2m) + "°C";
+    if(document.getElementById("cityName")) document.getElementById("cityName").innerText = cityName;
+    if(document.getElementById("condition")) document.getElementById("condition").innerText = "Weather Code: " + current.weather_code;
+    if(document.getElementById("humidity")) document.getElementById("humidity").innerText = current.relative_humidity_2m + "% Humidity";
+    if(document.getElementById("wind")) document.getElementById("wind").innerText = current.wind_speed_10m + " km/h Wind";
+    
+    // Nee design lo --°C anedi first h2 lo undachu - daanini kuda set chestunna ma
+    const card = document.querySelectorAll("h1, h2, p");
+    for(let el of card){
+        if(el.innerText.includes("°C") || el.innerText === "--" || el.innerText === "-°C"){
+           // temp found
+        }
+    }
+    // Direct ga --°C unna chota marchadaniki
+    document.body.innerHTML = document.body.innerHTML.replace("--°C", Math.round(current.temperature_2m) + "°C");
 
-  } catch (error) {
-    alert("City dorakaledu ma Sravani! Spelling chudu ma - Ex: Guntur");
+    console.log("Success ma Sravani:", cityName, current.temperature_2m);
+
+  } catch (e) {
+    alert("City dorakaledu ma! Spelling chudu ma - Ex: Guntur, Vijayawada");
+    console.error(e);
   }
 }
 
+// Button click connect chey ma
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("searchBtn").addEventListener("click", getWeather);
+  const btn = document.getElementById("searchBtn") || document.querySelector("button");
+  if(btn) btn.addEventListener("click", getWeather);
 });

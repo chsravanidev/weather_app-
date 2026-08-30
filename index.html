@@ -1,28 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sravani Weather</title>
+<title>Sravani Weather App</title>
 <style>
-body{font-family:Arial;text-align:center;padding:20px}
-input{padding:10px;width:200px}
-button{padding:10px}
-.card{margin-top:20px;border:1px solid #ccc;padding:20px;border-radius:10px}
+body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
+h2 { color: #333; }
+input { padding: 12px; width: 220px; border-radius: 10px; border: 1px solid #999; font-size: 16px; }
+button { padding: 12px 18px; border-radius: 10px; border: 1px solid #999; background: #007bff; color: white; font-size: 16px; cursor: pointer; }
+button:hover { background: #0056b3; }
+.card { margin-top: 25px; border: 1px solid #ccc; padding: 30px; border-radius: 20px; background: white; max-width: 400px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+#temp { font-size: 50px; font-weight: bold; color: #007bff; }
+#cityName { font-size: 22px; margin-top: 10px; font-weight: bold; }
 </style>
 </head>
 <body>
-<h2>☀️ Sravani Weather</h2>
-<input type="text" id="cityInput" placeholder="Enter City - Ex: Guntur">
+
+<h2>☀️ Sravani Weather App</h2>
+<input type="text" id="cityInput" placeholder="Enter city name" value="Guntur">
 <button id="searchBtn">Search</button>
+
 <div class="card">
-<h1 id="temp">--°C</h1>
-<h2 id="cityName">--</h2>
-<p id="condition">--</p>
-<p id="humidity"></p>
-<p id="wind"></p>
+  <div id="temp">--°C</div>
+  <div id="cityName">--</div>
+  <div id="condition" style="margin-top:10px; color:#666;">--</div>
+  <div id="humidity" style="margin-top:5px;"></div>
+  <div id="wind" style="margin-top:5px;"></div>
 </div>
-<p>Made by Sravani | QA Project</p>
-<script src="script.js"></script>
-</body>
-</html>
+
+<p style="margin-top:20px; color:#888;">Made by Sravani | QA Project</p>
+
+<script>
+async function getWeather(){
+  const city = document.getElementById("cityInput").value.trim();
+  if(!city){ alert("City type chey ma!"); return; }
+  
+  document.getElementById("temp").innerText = "Loading...";
+  
+  try{
+    // Step 1: City to Lat/Lon
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+    const geoData = await geoRes.json();
+    if(!geoData.results || geoData.results.length === 0) throw new Error("City not found");
+
+    const lat = geoData.results[0].latitude;
+    const lon = geoData.results[0].longitude;
+    const name = geoData.results[0].name;
+
+    // Step 2: Weather API
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code`);
+    const weatherData = await weatherRes.json();
+    const cur = weatherData.current;
+
+    // Step 3: Show data
+    document.getElementById("temp").innerText = Math.round(cur.temperature_2m) + "°C";
+    document.getElementById("cityName").innerText = name;
+    document.getElementById("condition").innerText = "Weather Code: " + cur.weather_code;
+    document.getElementById("humidity").innerText = cur.relative

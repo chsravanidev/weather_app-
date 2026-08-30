@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sravani Weather App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="card">
+<h2>🌤️ Sravani Weather</h2>
+<div class="search">
+<input type="text" id="cityInput" placeholder="Vijayawada" value="Vijayawada">
+<button onclick="getWeather()">Search</button>
+</div>
+<div class="weather">
+<h1 id="temp">31°C</h1>
+<h3 id="cityName">Vijayawada</h3>
+<p id="desc">Partly Cloudy</p>
+<div class="row">
+<div>💧 <span id="humidity">84%</span><br>Humidity</div>
+<div>💨 <span id="wind">7.8 km/h</span><br>Wind</div>
+</div>
+</div>
+<p class="foot">Made by Sravani | QA Project</p>
+</div>
+<script src="script.js"></script>
+</body>
+  </html>

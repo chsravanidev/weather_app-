@@ -1,29 +1,36 @@
-const apiKey = "fd2d3a8a6a8e4b1e8e8e9a0c8c8c8c8c";
-
 async function getWeather(){
   const city = document.getElementById("cityInput").value || "Vijayawada";
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
-
+  
   try{
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if(data.cod == 200){
-      document.getElementById("cityName").innerText = data.name;
-      document.getElementById("temp").innerText = Math.round(data.main.temp) + "°C";
-      document.getElementById("desc").innerText = data.weather[0].description;
-      document.getElementById("humidity").innerText = data.main.humidity + "% Humidity";
-      document.getElementById("wind").innerText = data.wind.speed + " km/h Wind";
-    } else {
-      alert("City not found ma Sravani! Check spelling");
+    // Step 1 - City name to lat/long
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
+    const geoData = await geoRes.json();
+    
+    if(!geoData.results){
+      alert("City not found ma Sravani! Spelling chudu ma");
+      return;
     }
+    
+    const lat = geoData.results[0].latitude;
+    const lon = geoData.results[0].longitude;
+    const cityName = geoData.results[0].name;
+
+    // Step 2 - Get weather
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code`);
+    const weatherData = await weatherRes.json();
+    const current = weatherData.current;
+
+    document.getElementById("cityName").innerText = cityName;
+    document.getElementById("temp").innerText = Math.round(current.temperature_2m) + "°C";
+    document.getElementById("desc").innerText = "Weather Code: " + current.weather_code + " - Live!";
+    document.getElementById("humidity").innerText = current.relative_humidity_2m + "% Humidity";
+    document.getElementById("wind").innerText = current.wind_speed_10m + " km/h Wind";
+
   }catch(e){
-    alert("API Error ma - Check API Key!");
+    alert("Error ma! Internet chudu ma Sravani");
+    console.log(e);
   }
 }
 
-// Button click
 document.querySelector("button").addEventListener("click", getWeather);
-
-// Auto load
 getWeather();
